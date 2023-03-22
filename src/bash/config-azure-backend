@@ -1,0 +1,256 @@
+#!/usr/bin/env bash
+set -eo pipefail
+export CONTAINER_NAME='tfstate'
+
+############# functions #################
+
+function azLogin {
+	echo "login to azure portal, you will be redirect to the azure portal."
+	az login
+}
+
+function startInteractive {
+
+	echo -n "Please paste your subscription-id from login (SUBSCRIPTION): "
+	read -r
+	export SUBSCRIPTION=${REPLY}
+	echo -n "The name of service-principal or app-registration e.g. sp-terraform-azure-cicd (SERVICE_PRINCIPAL_NAME): "
+	read -r
+	export RESOURCE_GROUP_NAME=${REPLY}
+	echo -n "The name of the storageaccount for the blob container e.g. saterraformazurestate (STORAGE_ACCOUNT_NAME): "
+	read -r
+	export STORAGE_ACCOUNT_NAME=${REPLY}
+	echo "Setting the variable is optional and should only be set if different stages are to be mapped to different terraformstates"
+	echo -n "The environments will be used to create terraform workspaces for multiple environments e.g. development production: "
+	read -r
+	export ENVIRONMENTS=${REPLY}
+	echo "The location that resourcegroup and storageaccount will be bootstraped"
+	read -r
+	export LOCATION=${REPLY}
+	echo "The container in the storageaccount that will be used safe the terraformstate"
+	echo -n "If you dont have terraform workspaces then the default workspace will be mapped to set name."
+	echo -n "If you set terraform workspaces then the for every workspace a tfstate with env will be created in the container."
+	read -r
+	export CONTAINER_NAME=${REPLY}
+
+	echo "Do you wish to progress further? (use number)"
+	select yn in "Yes" "No"; do
+		case $yn in
+		Yes) startBootstrapping ;;
+		No) exit ;;
+		esac
+	done
+
+}
+
+function azSetSubscription {
+	az account set --subscription "$SUBSCRIPTION"
+}
+
+function azCreateResourceGroup {
+	echo "create resource group for storageaccount"
+	az group create --name "$RESOURCE_GROUP_NAME" --location "$LOCATION"
+	az group lock create --lock-type CanNotDelete -n OnDeleteLock -g "$RESOURCE_GROUP_NAME" --notes ""
+}
+
+function azCreateStorageAccount {
+	echo "create storageaccount for storageaccount for blob container"
+	az storage account create --resource-group "$RESOURCE_GROUP_NAME" --name "$STORAGE_ACCOUNT_NAME" --sku Standard_LRS --encryption-services blob
+}
+
+function azGetStorageAccountKey {
+	echo "get storageaccount key to create blob container"
+	ACCOUNT_KEY=$(az storage account keys list --resource-group "$RESOURCE_GROUP_NAME" --account-name "$STORAGE_ACCOUNT_NAME" --query [0].value -o tsv)
+}
+
+function azCreateBlobContainer {
+	echo "create blob container to save terraform state"
+	az storage container create --name $CONTAINER_NAME --account-name "$STORAGE_ACCOUNT_NAME" --account-key "$ACCOUNT_KEY"
+}
+
+function terraformCreateWorkspace {
+
+	if [[ -z $ENVIRONMENTS ]]; then
+		echo "use terraform default workspace"
+	else
+		for workspace in $ENVIRONMENTS; do
+			terraform -chdir="$temp_dir" init
+			terraform -chdir="$temp_dir" workspace new "$workspace"
+			echo "created workspace: $workspace"
+		done
+	fi
+
+	exit 1
+}
+
+function terraformInit {
+
+	if [[ -z $ENVIRONMENTS ]]; then
+		echo "init and create a tfstate terraform.tfstate in the blob"
+		terraform -chdir="$temp_dir" init
+
+	else
+		for workspace in $ENVIRONMENTS; do
+			echo "init and create a tfstate terraform.tfstateenv:$workspace in the blob"
+			terraform -chdir="$temp_dir" init
+		done
+	fi
+
+}
+
+function azCreateTerraformBackendTemp {
+	temp_dir=$(mktemp -d)
+
+	echo " terraform {
+     backend \"azurerm\" {
+    resource_group_name  = \"$RESOURCE_GROUP_NAME\"
+    storage_account_name = \"$STORAGE_ACCOUNT_NAME\"
+    container_name       = \"$CONTAINER_NAME\"
+    key                  = \"terraform.tfstate\" # refers to the file name
+  }
+}" >"$temp_dir"/terraform.tf
+
+}
+
+function errorEcho {
+	echo "ERROR: ${1}" 1>&2
+	exit 1
+}
+
+function infoEcho {
+	echo "${1}"
+}
+
+function errorUsage {
+
+	echo "+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+|                                 ERROR: ${1}                                    |
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  "
+	usageInteractive
+	usage
+	exit 1
+}
+
+function usage() {
+	echo "
+
+
+  "
+	echo "If you dont want start the script interactive, then"
+	echo "please set all necessary environments like export SUBSCRIPTION=93982434-31232... "
+	echo "--------------- necessary-Variables: -------------------"
+	echo "SUBSCRIPTION: e.g 93982434-31232... "
+	echo "RESOURCE_GROUP_NAME: e.g. rg-terraform-azure-backend"
+	echo "STORAGE_ACCOUNT_NAME: e.g. saterraformazurestate"
+	echo "LOCATION: e.g. westeurope"
+	echo "CONTAINER_NAME: e.g. tfstate"
+	echo "--------------------------------------------------------"
+	echo " "
+	echo "--------------- Optional-Variables: -------------------"
+	echo "ENVIRONMENTS (optinal) e.g. \"development production\" "
+	echo "Note: if you dont want use separate terraform-workspaces, then let it empty "
+	echo "--------------------------------------------------------"
+	echo " "
+	echo "To get the Subscription-ID and access to the create the resources, you run first:"
+	echo "az login"
+	echo "you must login with as a user with following access-rights:"
+	echo "Subscription: user access administrator"
+	echo ""
+}
+
+function usageInteractive() {
+	echo "
+
+
+  "
+	echo "Some arguments were forgotten or set incorrectly when executing the script"
+	echo "You can start the script interactive to fill all necessary variables"
+	echo "./configre-azure-backend.sh -i or ./configre-azure-backend.sh --interactive"
+
+}
+
+function startBootstrapping() {
+
+	azSetSubscription
+	azCreateResourceGroup
+	azCreateStorageAccount
+	azGetStorageAccountKey
+	azCreateBlobContainer
+	azCreateTerraformBackendTemp
+	terraformInit
+	terraformCreateWorkspace
+
+}
+
+######### check prerequisites ############
+for cmd in az terraform; do
+	command -v ${cmd} >/dev/null || {
+		echo >&2 "${cmd} must be installed - exiting..."
+		exit 1
+	}
+done
+
+while [[ $# -gt 0 ]]; do
+	key="${1}"
+
+	case $key in
+	--interactive | -i)
+		shift
+		export INTERACTIVE=1
+		;;
+	--help | -h | help)
+		usage
+		exit 0
+		;;
+	*)
+		shift
+		;;
+	esac
+done
+
+# load env file if present
+if [[ -f "${PWD}/.backend.env" ]]; then
+	source "${PWD}/.backend.env"
+fi
+
+#### interactive mode ######
+if [ "${INTERACTIVE}" -eq 1 ] 2>/dev/null; then #[[ "${@#--interactive}" = "$@"  ]];
+	az login
+	startInteractive
+fi
+
+# -------- environments check  ------------ #
+
+## Abort if required arguments are empty
+for variable in $SUBSCRIPTION; do
+	if [[ -z ${variable} || ${!variable} == '<no value>' ]]; then
+		errorUsage "${variable} missing!"
+	fi
+done
+
+for variable in $RESOURCE_GROUP_NAME; do
+	if [[ -z ${variable} || ${!variable} == '<no value>' ]]; then
+		errorUsage "${variable} missing!"
+	fi
+done
+
+for variable in $STORAGE_ACCOUNT_NAME; do
+	if [[ -z ${variable} || ${!variable} == '<no value>' ]]; then
+		errorUsage "${variable} missing!"
+	fi
+done
+
+for variable in $CONTAINER_NAME; do
+	if [[ -z ${variable} || ${!variable} == '<no value>' ]]; then
+		errorUsage "${variable} missing!"
+	fi
+done
+
+for variable in $LOCATION; do
+	if [[ -z ${variable} || ${!variable} == '<no value>' ]]; then
+		errorUsage "${variable} missing!"
+	fi
+done
+
+##### main #######
+startBootstrapping

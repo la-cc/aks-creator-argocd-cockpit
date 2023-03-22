@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+PWD="$(pwd -P)"
+
+function interactive {
+  # Ask/Process inputs
+  echo
+  echo "Please provide following settings"
+  for variable in "$@"; do
+    REPLY=""
+    while [[ -z "${REPLY}" ]]; do
+      echo -n "${variable}: "
+      read;
+    done
+    export "${variable}=${REPLY}"
+  done
+
+  # Print summary
+  echo
+  echo "Using following settings to pull configuration file:"
+  for variable in $@; do
+    echo "${variable}: ${!variable}"
+  done
+
+  # Ask for confirmation
+  echo
+  echo "Do you want to continue? (use numbers):"
+  select yn in "yes" "no"; do
+    case $yn in
+    yes)
+    return
+    ;;
+    no)
+    errorEcho "User aborted script."
+    ;;
+    esac
+  done
+}
+
+function infoEcho {
+    echo "INFO: ${1}" 1>&2
+}
+
+function errorEcho {
+    echo "ERROR: ${1}" 1>&2
+    exit 1
+}
+
+function errorUsage {
+    echo "ERROR: ${1}" 1>&2
+    echo ""
+    usage
+    exit 1
+}
+
+# load env file if present
+if [[ -f "${PWD}/.tanzu-creator" ]]; then
+  for var in $(cat "${PWD}/.tanzu-creator"); do
+    export "${var}"
+  done
+fi
+
+# check prerequisites
+for cmd in jq az
+do
+  command -v ${cmd} > /dev/null || {  echo >&2 "${cmd} must be installed - exiting..."; exit 1; }
+done
+
+DEFAULT_CONFIG_FILE="${PWD}/config.yaml"
+DEFAULT_FORCE=0
+DEFAULT_INTERACTIVE=0
+function usage() {
+echo "Download the config.yaml from your Azure KeyVault."
+echo ""
+echo "usage: $0 [options]"
+echo ""
+echo "        -c --config-file <path>:      Path to the target config file to be saved (default: ${DEFAULT_CONFIG_FILE}) (ENV: CONFIG_FILE)"
+echo "        -f --force:                   Overwrite exiting config file (default: ${DEFAULT_FORCE}) (ENV: FORCE)"
+echo "        -i --interactive:             Starts this script in interactive mode (default: ${DEFAULT_INTERACTIVE}) (ENV: INTERACTIVE)"
+echo "        -n --filename:                Filename to pulled config file (default: ${DEFAULT_TARGET_FILENAME}) (ENV: TARGET_FILENAME)"
+echo ""
+echo "        -s --subscription:            The Azure subscription used for login (required) (ENV: SUBSCRIPTION)"
+echo "        -k --key-vault-name <name>:   Name of the key vault containing the secret (required) (ENV: KEY_VAULT_NAME)"
+echo "        -e --secret-name <name>:      Name of the secret containing the config file (required) (ENV: SECRET_NAME)"
+echo ""
+echo "environment variables:"
+echo ""
+echo "        CONFIG_FILE <path>:           Path to the destination at which the config file will be stored (default: ${DEFAULT_CONFIG_FILE})"
+echo "        FORCE <0|1>:                  Overwrite exiting config file (default: ${DEFAULT_FORCE})"
+echo "        INTERACTIVE <0|1>:            Starts this script in interactive mode (default: ${DEFAULT_INTERACTIVE})"
+echo ""
+echo "        SUBSCRIPTION <id>:            The Azure subscription used for login (required)"
+echo "        KEY_VAULT_NAME <name>:        Name of the key vault containing the secret (required)"
+echo "        SECRET_NAME <name>:           Name of the secret containing the config file (required)"
+}
+
+while [[ $# -gt 0 ]]; do
+    key="${1}"
+
+    case $key in
+        --config-file|-c)
+        shift
+        export CONFIG_FILE="${1}"
+        shift
+        ;;
+        --filename|-n)
+        shift
+        export TARGET_FILENAME="${1}"
+        ;;
+        --force|-f)
+        shift
+        export FORCE=1
+        ;;
+        --interactive|-i)
+        shift
+        export INTERACTIVE=1
+        ;;
+        --subscription|-s)
+        shift
+        export SUBSCRIPTION="${1}"
+        ;;
+        --key-vault-name|-k)
+        shift
+        export KEY_VAULT_NAME="${1}"
+        ;;
+        --secret-name|-e)
+        shift
+        export SECRET_NAME="${1}"
+        ;;
+        --help|-h|help)
+        usage
+        exit 0
+        ;;
+        *)
+        shift
+    esac
+done
+
+# Assign default values if optional argument is empty
+for variable in CONFIG_FILE FORCE INTERACTIVE; do
+  if [[ -z ${!variable} || ${!variable} == '<no value>' ]]; then
+    default_var_name="DEFAULT_${variable}"
+    export "${variable}=${!default_var_name}"
+  fi
+done
+
+# Look for empty required arguments
+empty_variables=()
+for variable in SUBSCRIPTION KEY_VAULT_NAME SECRET_NAME; do
+  if [[ -z "${!variable}" ]]; then
+    empty_variables+=(${variable})
+  fi
+done
+
+# save to env file
+cat <<EOF > "${PWD}/.tanzu-creator"
+SUBSCRIPTION=${SUBSCRIPTION}
+KEY_VAULT_NAME=${KEY_VAULT_NAME}
+SECRET_NAME=${SECRET_NAME}
+EOF
+
+# Ask for them if interactive mode is enabled
+# otherwise throw error
+if [[ "${#empty_variables[@]}" -gt 0 ]]; then
+  if [ "${INTERACTIVE}" -eq 1 ]; then
+    interactive ${empty_variables[@]}
+  else
+    errorUsage "${empty_variables[*]} missing!"
+  fi
+fi
+
+# Check for existing config file at given path
+# if [ -f "${CONFIG_FILE}" ] && [ "${FORCE}" -ne 1  ]; then
+#   errorEcho "Config file ${CONFIG_FILE} already exists and FORCE is not enabled. Delete file to generate new one!"
+# fi
+
+# Set subscription
+infoEcho "Setting subscription to ${SUBSCRIPTION}"
+az account set --subscription "${SUBSCRIPTION}"
+
+# Pull config file
+infoEcho "Pulling configuration file from KeyVault '${KEY_VAULT_NAME}' and secret '${SECRET_NAME}'"
+az keyvault secret show \
+  --name "${SECRET_NAME}" \
+  --vault-name "${KEY_VAULT_NAME}" \
+  | jq -r .value \
+  > "${TARGET_FILENAME}"
+
+infoEcho "Success."

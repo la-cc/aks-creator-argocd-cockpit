@@ -1,0 +1,41 @@
+name: Docker-Build
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: meta_build
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/la-cc/aks-creator-argocd-cockpit
+          labels: |
+            org.opencontainers.image.title="AKS Creator Argo CD Cockpit"
+          tags: |
+            type=schedule
+            type=ref,event=tag
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./build/docker/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta_build.outputs.tags }}
+          labels: ${{ steps.meta_build.outputs.labels }}

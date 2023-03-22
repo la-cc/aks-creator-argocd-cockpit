@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+import getopt
+import os
+import sys
+
+import yaml
+import shutil
+import termios
+import tty
+import datetime
+from jinja2 import Environment, FileSystemLoader
+from schema import SchemaUnexpectedTypeError, SchemaError
+
+from schemas import config
+
+usage = """
+init-repository.py
+
+Guides you through the initiation of a new cluster
+"""
+
+
+def getchr(prompt=''):
+    """reads a single character"""
+    sys.stdout.write(prompt)
+    sys.stdout.flush()
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        return sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+
+def read_version_file(path):
+    # check if file is present
+    if os.path.isfile(path):
+        text_file = open(path, "r")
+        version = text_file.read()
+        text_file.close()
+
+        if version == "":
+            raise ValueError("file is empty")
+
+        return version
+    else:
+        raise FileNotFoundError("file %s not found!" % path)
+
+
+def main(argv):
+    # get path to executable for determining relative paths
+    work_dir = ""
+    config_file_path = ""
+    templates_path = ""
+    version_file_path = ""
+
+    try:
+        opts, args = getopt.getopt(argv, "hf:t:w:c:", [
+                                   "help=", "config-file=", "work_dir=", "template-path="])
+    except getopt.GetoptError:
+        print(usage)
+        sys.exit(2)
+    for opt, arg in opts:
+        if any(s in opt for s in ["c", "config-file"]):
+            config_file_path = arg
+        if any(s in opt for s in ["w", "work_dir    "]):
+            work_dir = arg
+        if any(s in opt for s in ["t", "template-path"]):
+            templates_path = arg
+        if opt in ('-h', '--help'):
+            print(usage)
+            sys.exit()
+
+    if work_dir == "":
+        work_dir = os.path.realpath(os.getcwd())
+
+    if templates_path == "":
+        templates_path = "/usr/local/src/templates"
+
+    # load and validate configuration file
+    if config_file_path == "":
+        config_file_path = os.path.join(work_dir, "config.yaml")
+
+    configfile = any
+    try:
+        with open(config_file_path) as configfile:
+            configfile = yaml.load(configfile, Loader=yaml.FullLoader)
+
+        # validate config file against schema
+        validated_config = config.config_schema.validate(configfile)
+
+        # add timestamp for creation time
+        validated_config["timestamp"] = datetime.date.today()
+
+    except SchemaUnexpectedTypeError as e:
+        sys.exit(e.code)
+    except SchemaError as e:
+        sys.exit(e.code)
+    except Exception as e:
+        sys.exit(e.code)
+
+    # load templates and environment variables
+    env = Environment(loader=FileSystemLoader(searchpath=templates_path),
+                      extensions=["jinja2_getenv_extension.GetenvExtension", "jinja2_base64_filters.Base64Filters"])
+
+    # Delete generated directories
+    shutil.rmtree(os.path.join(work_dir, "platform/main"),
+                  ignore_errors=True, onerror=None)
+
+    # Look for templates
+    templates = [x for x in env.list_templates() if x.endswith('.tpl')]
+
+    # Process templates
+    for template in templates:
+        if not template.startswith("platform/main"):
+            template_path = os.path.join(
+                work_dir, template.replace('.tpl', ''))
+            print("Storing template file %s" % template_path)
+
+            if not os.path.exists(os.path.dirname(template_path)):
+                os.makedirs(os.path.dirname(template_path))
+
+            with open(template_path, "w") as f:
+                f.write(env.get_template(template).render(validated_config))
+
+    # Process aks platform terraform files
+    platform_templates = [x for x in templates if x.startswith(
+        'platform/main')]
+
+    # Process aks platform terraform templates
+    template_files(validated_config, platform_templates,
+                   work_dir, env, True)
+
+
+def template_files(validated_config, templates, work_dir, env, overwrite):
+    for cluster in validated_config['clusters']:
+        for template in templates:
+            path = os.path.join(work_dir, template.replace(
+                'example', cluster['stage'])).replace('.tpl', '')
+
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+
+            compiled_config = validated_config.copy()
+            compiled_config['cluster'] = cluster
+
+            if os.path.exists(path) and not overwrite:
+                print(
+                    "Skipped template file %s since its already present and 'overwrite' is false" % path)
+            else:
+                with open(path, "w") as f:
+                    print("Storing template file %s" % path)
+                    f.write(env.get_template(template).render(compiled_config))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
