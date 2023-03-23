@@ -28,7 +28,7 @@ steps:
         displayName: Install Argo CD (incl. CRD) - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl apply -k argocd/
+            kubectl apply -k argocd/env/${{ cluster.environment }}
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
