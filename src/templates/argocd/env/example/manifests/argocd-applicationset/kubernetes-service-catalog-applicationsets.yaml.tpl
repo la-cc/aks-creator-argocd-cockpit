@@ -16,7 +16,7 @@ spec:
 
   # Source of the application manifests
   source:
-    repoURL: {{ argocd.ksc.url }}
+    repoURL: {{ cluster.argocd.ksc.url }}
     targetRevision: main
     path: ./argocd-applicationsets
 

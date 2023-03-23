@@ -34,6 +34,49 @@ config_schema = Schema({
                         Optional("node_count"): int,
                     }
                 ]
+            },
+            Optional("argocd"): {
+                Optional("oidc_config"): {
+                    Optional("enable"): bool,
+                    Optional("url"): str,
+                    Optional("tenantID"): str,
+                    Optional("clientID"): str,
+                    Optional("rbac_role_group_mapping"): str,
+                },
+
+                Optional("ingress"): {
+                    Optional("enable", default=False): bool,
+                    Optional("host"): str,
+                    Optional("issuer"): str,
+                },
+                Optional("externalDNS"): {
+                    Optional("enable", default=False): bool,
+                    Optional("resource_group"): str,
+                    Optional("tenantID"): str,
+                    Optional("subscriptionID"): str,
+                    Optional("domain_filters"): list,
+                    Optional("txtOwnerId"): str
+                },
+
+                Optional("security"): {
+                    Optional("enable", default=False): bool,
+                    Optional("clusterIssuerDNS"): {
+                        Optional("e_mail"): str,
+                        Optional("subscriptionID"): str,
+                        Optional("resourceGroupName"): str,
+                        Optional("hostedZoneName"): str
+                    },
+                    Optional("clusterIssuerHTTP"): {
+                        Optional("e_mail"): str
+                    }
+                },
+
+                Optional("ksc"): {
+                    Optional("enable", default=False): bool,
+                    Optional("url"): str,
+                    Optional("pat"): str,
+                    Optional("organization"): str
+                }
             }
         }
     ],
@@ -42,49 +85,5 @@ config_schema = Schema({
         Optional("enable"): bool,
         Optional("library_group"): str,
 
-    },
-
-    Optional("argocd"): {
-        Optional("oidc_config"): {
-            Optional("enable"): bool,
-            Optional("url"): str,
-            Optional("tenantID"): str,
-            Optional("clientID"): str,
-            Optional("rbac_role_group_mapping"): str,
-        },
-
-        Optional("ingress"): {
-            Optional("enable", default=False): bool,
-            Optional("host"): str,
-            Optional("issuer"): str,
-        },
-        Optional("externalDNS"): {
-            Optional("enable", default=False): bool,
-            Optional("resource_group"): str,
-            Optional("tenantID"): str,
-            Optional("subscriptionID"): str,
-            Optional("domain_filters"): list,
-            Optional("txtOwnerId"): str
-        },
-
-        Optional("security"): {
-            Optional("enable", default=False): bool,
-            Optional("clusterIssuerDNS"): {
-                Optional("e_mail"): str,
-                Optional("subscriptionID"): str,
-                Optional("resourceGroupName"): str,
-                Optional("hostedZoneName"): str
-            },
-            Optional("clusterIssuerHTTP"): {
-                Optional("e_mail"): str
-            }
-        },
-
-        Optional("ksc"): {
-            Optional("enable", default=False): bool,
-            Optional("url"): str,
-            Optional("pat"): str,
-            Optional("organization"): str
-        }
     }
 })

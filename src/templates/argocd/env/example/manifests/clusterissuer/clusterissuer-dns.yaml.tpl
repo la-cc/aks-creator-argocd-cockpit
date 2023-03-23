@@ -5,15 +5,15 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: {{ argocd.security.clusterIssuerDNS.e_mail }}
+    email: {{ cluster.argocd.security.clusterIssuerDNS.e_mail }}
     privateKeySecretRef:
       name: letsencrypt-dns
     solvers:
       - dns01:
           azureDNS:
-            subscriptionID: "{{ argocd.security.clusterIssuerDNS.subscriptionID }}"
-            resourceGroupName: "{{ argocd.security.clusterIssuerDNS.resourceGroupName }}"
-            hostedZoneName: "{{ argocd.security.clusterIssuerDNS.hostedZoneName }}"
+            subscriptionID: "{{ cluster.argocd.security.clusterIssuerDNS.subscriptionID }}"
+            resourceGroupName: "{{ cluster.argocd.security.clusterIssuerDNS.resourceGroupName }}"
+            hostedZoneName: "{{ cluster.argocd.security.clusterIssuerDNS.hostedZoneName }}"
             # Azure Cloud Environment, default to AzurePublicCloud
             environment: AzurePublicCloud
             # optional, only required if node pools have more than 1 managed identity assigned

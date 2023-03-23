@@ -39,7 +39,7 @@ steps:
         displayName: Apply Argo CD Manifests - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl apply -k argocd/manifests
+            kubectl apply -k argocd/env/${{ cluster.environment }}/manifests
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
@@ -60,8 +60,8 @@ steps:
         displayName: Patch Argo CD ConfigMaps - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl -n argocd apply -f argocd/oidc-azure-ad/argocd-cm.yaml
-            kubectl -n argocd apply -f argocd/oidc-azure-ad/argocd-rbac-cm.yaml
+            kubectl -n argocd apply -f argocd/env/${{ cluster.environment }}/oidc-azure-ad/argocd-cm.yaml
+            kubectl -n argocd apply -f argocd/env/${{ cluster.environment }}/oidc-azure-ad/argocd-rbac-cm.yaml
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
@@ -82,7 +82,7 @@ steps:
         displayName: Apply Helm Charts - ${{ cluster.name }}
         inputs:
           script: |
-            kustomize build --enable-helm argocd//manifests/base-deployment/generator/excelsior/ | kubectl apply -f -
+            kustomize build --enable-helm argocd/env/${{ cluster.environment }}/manifests/base-deployment/generator/excelsior/ | kubectl apply -f -
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
@@ -92,7 +92,7 @@ steps:
         displayName: Apply Service Context - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl apply -k argocd/manifests/clusterissuer
+            kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)

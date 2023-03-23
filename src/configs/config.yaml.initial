@@ -5,7 +5,12 @@ azure_backend:
   resource_group_name_backend: <>
   storage_account_name: <>
 
-# Azure Kubernetes Cluster related data
+# Azure Devops Pipeline related data
+azure_devops_pipeline:
+  enable: true
+  library_group: <>
+
+# Azure Kubernetes Cluster and Argo CD related data
 clusters:
   - name: excelsior-cloud
     stage: development
@@ -17,42 +22,36 @@ clusters:
       enable: true
       azure_cloud_zone: <>
     node_pools: {}
-
-# Azure Devops Pipeline related data
-azure_devops_pipeline:
-  enable: true
-  library_group: <>
-
-# Argo CD Cockpit related data
-argocd:
-  oidc_config:
-    enable: true
-    url: https://argocd.<>/
-    tenantID: <>
-    clientID: <>
-    rbac_role_group_mapping: <>
-  ingress:
-    host: argocd.<>
-    issuer: letsencrypt-dns
-  externalDNS:
-    enable: true
-    resource_group: <>
-    tenantID: <>
-    subscriptionID: <>
-    domain_filters:
-      - <>
-    txtOwnerId: <>
-  security:
-    enable: true
-    clusterIssuerDNS:
-      e_mail: <>
-      subscriptionID: <>
-      resourceGroupName: <>
-      hostedZoneName: <>
-    clusterIssuerHTTP:
-      e_mail: <>
-  ksc:
-    enable: true
-    url: <>
-    pat: <>
-    organization: <>
+    # Argo CD Cockpit related data
+    argocd:
+      oidc_config:
+        enable: true
+        url: https://argocd.<>/
+        tenantID: <>
+        clientID: <>
+        rbac_role_group_mapping: <>
+      ingress:
+        host: argocd.<>
+        issuer: letsencrypt-dns
+      externalDNS:
+        enable: true
+        resource_group: <>
+        tenantID: <>
+        subscriptionID: <>
+        domain_filters:
+          - <>
+        txtOwnerId: <>
+      security:
+        enable: true
+        clusterIssuerDNS:
+          e_mail: <>
+          subscriptionID: <>
+          resourceGroupName: <>
+          hostedZoneName: <>
+        clusterIssuerHTTP:
+          e_mail: <>
+      ksc:
+        enable: true
+        url: <>
+        pat: <>
+        organization: <>

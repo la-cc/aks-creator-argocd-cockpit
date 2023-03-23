@@ -1,4 +1,4 @@
-{% if argocd.oidc_config.enable %}
+{% if cluster.argocd.oidc_config.enable %}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,11 +13,11 @@ data:
       generate:
         command: [ "sh", "-c" ]
         args: [ "kustomize build --enable-helm" ]
-  url: {{ argocd.oidc_config.url }} # Replace with the external base URL of your Argo CD
+  url: {{ cluster.argocd.oidc_config.url }} # Replace with the external base URL of your Argo CD
   oidc.config: |
     name: Azure
-    issuer: https://login.microsoftonline.com/{{ argocd.oidc_config.tenantID }}/v2.0
-    clientID: {{ argocd.oidc_config.clientID }}
+    issuer: https://login.microsoftonline.com/{{ cluster.argocd.oidc_config.tenantID }}/v2.0
+    clientID: {{ cluster.argocd.oidc_config.clientID }}
     clientSecret: $oidc.azure.clientSecret
     requestedIDTokenClaims:
       groups:

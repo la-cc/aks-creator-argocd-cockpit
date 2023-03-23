@@ -5,7 +5,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: {{ argocd.security.clusterIssuerHTTP.e_mail }}
+    email: {{ cluster.argocd.security.clusterIssuerHTTP.e_mail }}
     privateKeySecretRef:
       name: letsencrypt-http
     solvers:

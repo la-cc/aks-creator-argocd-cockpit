@@ -107,13 +107,16 @@ def main(argv):
     # Delete generated directories
     shutil.rmtree(os.path.join(work_dir, "platform/main"),
                   ignore_errors=True, onerror=None)
+    # Delete generated directories
+    shutil.rmtree(os.path.join(work_dir, "argocd"),
+                  ignore_errors=True, onerror=None)
 
     # Look for templates
     templates = [x for x in env.list_templates() if x.endswith('.tpl')]
 
     # Process templates
     for template in templates:
-        if not template.startswith("platform/main"):
+        if not template.startswith("platform/main") and not template.startswith("argocd"):
             template_path = os.path.join(
                 work_dir, template.replace('.tpl', ''))
             print("Storing template file %s" % template_path)
@@ -127,9 +130,15 @@ def main(argv):
     # Process aks platform terraform files
     platform_templates = [x for x in templates if x.startswith(
         'platform/main')]
+    # Process aks platform terraform files
+    argocd_templates = [x for x in templates if x.startswith(
+        'argocd')]
 
     # Process aks platform terraform templates
     template_files(validated_config, platform_templates,
+                   work_dir, env, True)
+    # Process aks platform terraform templates
+    template_files(validated_config, argocd_templates,
                    work_dir, env, True)
 
 

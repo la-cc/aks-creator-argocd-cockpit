@@ -3,7 +3,7 @@ kind: Kustomization
 
 namespace: argocd
 resources:
-{% if argocd.oidc_config.enable %}
+{% if cluster.argocd.oidc_config.enable %}
   - argocd-cm.yaml
   - argocd-rbac-cm.yaml
 {% endif %}

@@ -7,7 +7,7 @@ resources:
   - ../../base/ingress-nginx
 
 patchesStrategicMerge:
-{% if argocd.externalDNS.enable %}
+{% if cluster.argocd.externalDNS.enable %}
   - patches/external-dns-values.yaml
 {% endif %}
   - patches/cert-manager-values.yaml

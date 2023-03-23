@@ -30,7 +30,7 @@ To install `igor` just download the `igor.sh` and store it in your `$PATH` like 
 Running `igor` without configuration will launch a busybox image. In order to use the tool with the AKS Creator image,
 a configuration file is required.
 
-> **_NOTE:_** You can get the recent tag from [la-cc/aks-creator-core](https://github.com/la-cc/aks-creator-core/tags)
+> **_NOTE:_** You can get the recent tag from [la-cc/aks-creator-argocd-cockpit](https://github.com/la-cc/aks-creator-argocd-cockpit/tags)
 
 Open the file `.igor.sh` in your preferred editor and use the following settings to configure `igor`:
 
@@ -156,6 +156,9 @@ The following examples show the possible configuration of the templating. The us
 # Azure Backend for Terraform related data
 azure_backend: {}
 
+# Azure Devops Pipeline related data
+azure_devops_pipeline: {}
+
 # Azure Kubernetes Cluster related data
 clusters:
   - name: excelsior-cloud
@@ -163,19 +166,15 @@ clusters:
     admin_list: []
     azure_public_dns: {}
     node_pools: {}
-
-# Azure Devops Pipeline related data
-azure_devops_pipeline: {}
-
-# Argo CD Cockpit related data
-argocd:
-  oidc_config: {}
-  ingress: {}
-  externalDNS: {}
-  security:
-    clusterIssuerDNS: {}
-    clusterIssuerHTTP: {}
-  ksc: {}
+    # Argo CD Cockpit related data
+    argocd:
+      oidc_config: {}
+      ingress: {}
+      externalDNS: {}
+      security:
+        clusterIssuerDNS: {}
+        clusterIssuerHTTP: {}
+      ksc: {}
 ```
 
 ### Maximum possible configuration:
@@ -188,7 +187,12 @@ azure_backend:
   resource_group_name_backend: <>
   storage_account_name: <>
 
-# Azure Kubernetes Cluster related data
+# Azure Devops Pipeline related data
+azure_devops_pipeline:
+  enable: true
+  library_group: <>
+
+# Azure Kubernetes Cluster and Argo CD related data
 clusters:
   - name: excelsior-cloud
     stage: development
@@ -200,44 +204,37 @@ clusters:
       enable: true
       azure_cloud_zone: <>
     node_pools: {}
-
-# Azure Devops Pipeline related data
-azure_devops_pipeline:
-  enable: true
-  library_group: <>
-
-# Argo CD Cockpit related data
-argocd:
-  oidc_config:
-    enable: true
-    url: https://<>/
-    tenantID: <>
-    clientID: <>
-    rbac_role_group_mapping: <>
-  ingress:
-    enable: true
-    host: <>
-    issuer: letsencrypt-dns
-  externalDNS:
-    enable: true
-    resource_group: <>
-    tenantID: <>
-    subscriptionID: <>
-    domain_filters:
-      - <>
-    txtOwnerId: <>
-  security:
-    enable: true
-    clusterIssuerDNS:
-      e_mail: <>
-      subscriptionID: <>
-      resourceGroupName: <>
-      hostedZoneName: <>
-    clusterIssuerHTTP:
-      e_mail: <>
-  ksc:
-    enable: true
-    url: <>
-    pat: <>
-    organization: <>
+    # Argo CD Cockpit related data
+    argocd:
+      oidc_config:
+        enable: true
+        url: https://argocd.<>/
+        tenantID: <>
+        clientID: <>
+        rbac_role_group_mapping: <>
+      ingress:
+        host: argocd.<>
+        issuer: letsencrypt-dns
+      externalDNS:
+        enable: true
+        resource_group: <>
+        tenantID: <>
+        subscriptionID: <>
+        domain_filters:
+          - <>
+        txtOwnerId: <>
+      security:
+        enable: true
+        clusterIssuerDNS:
+          e_mail: <>
+          subscriptionID: <>
+          resourceGroupName: <>
+          hostedZoneName: <>
+        clusterIssuerHTTP:
+          e_mail: <>
+      ksc:
+        enable: true
+        url: <>
+        pat: <>
+        organization: <>
 ```

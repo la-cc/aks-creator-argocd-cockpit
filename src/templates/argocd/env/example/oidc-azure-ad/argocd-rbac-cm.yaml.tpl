@@ -1,4 +1,4 @@
-{% if argocd.oidc_config.enable %}
+{% if cluster.argocd.oidc_config.enable %}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,5 +16,5 @@ data:
     p, role:org-admin, repositories, create, *, allow
     p, role:org-admin, repositories, update, *, allow
     p, role:org-admin, repositories, delete, *, allow
-    g, "{{ argocd.oidc_config.rbac_role_group_mapping }}", role:org-admin
+    g, "{{ cluster.argocd.oidc_config.rbac_role_group_mapping }}", role:org-admin
 {% endif %}
