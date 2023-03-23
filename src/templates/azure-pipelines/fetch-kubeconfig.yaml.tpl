@@ -23,6 +23,15 @@ steps:
                 && mv bin/linux_amd64/kubelogin /usr/local/bin
           targetType: inline
       - task: Bash@3
+        displayName: ${{ cluster.name }} - Install argocd cli
+        inputs:
+          script: |
+            echo "######### Intsall argocd cli ############"
+            curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+            sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+            rm argocd-linux-amd64
+          targetType: inline
+      - task: Bash@3
         displayName: ${{ variables.clusterName }} - Login vs azure kubernetes cluster
         inputs:
           script: |
