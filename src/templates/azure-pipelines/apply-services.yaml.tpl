@@ -49,15 +49,14 @@ steps:
         displayName: Patch Argo CD Secret - ${{ cluster.name }}
         inputs:
           script: |
-            if kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'; then
-              for ((i=30;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
-              kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'
+            for ((i=15;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
+            kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
-          AZURE_AAD_SSO_APP_SECRET: $(AZURE_AAD_SSO_APP_SECRET)
+          AZURE_AAD_SSO_APP_SECRET: $(AZURE_AAD_SSO_APP_SECRET_${{ cluster.environment }})
       - task: Bash@3
         displayName: Patch Argo CD ConfigMaps - ${{ cluster.name }}
         inputs:
@@ -94,9 +93,8 @@ steps:
         displayName: Apply Service Context - ${{ cluster.name }}
         inputs:
           script: |
-            if kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer; then
-              for ((i=30;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
-              kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer
+            for ((i=15;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
+            kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)

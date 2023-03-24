@@ -48,16 +48,14 @@ steps:
         inputs:
           script: |
             kubectl config use-context aks-${{ cluster.name }}
-            if argocd login $(kubectl get ingress argocd-server-ingress -n argocd --output=jsonpath='{.spec.rules[0].host}') --username admin --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo) --insecure --grpc-web; then
-              cat argocd/env/${{ cluster.environment }}/clusters/clusters.csv | while read -r item;
-              do
-                cluster=$(echo $item | awk -F' ' '{print $1}')
-                env=$(echo $item | awk -F' ' '{print $2}')
-                argocd cluster add aks-$cluster --label $env --upsert
-              done
-            else
-              echo "Error: Failed to login to Cockpit"
-            fi
+            argocd login $(kubectl get ingress argocd-server-ingress -n argocd --output=jsonpath='{.spec.rules[0].host}') --username admin --password $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo) --insecure --grpc-web
+
+            cat argocd/env/${{ cluster.environment }}/clusters/clusters.csv | while read -r item;
+            do
+              cluster=$(echo $item | awk -F' ' '{print $1}')
+              env=$(echo $item | awk -F' ' '{print $2}')
+              argocd cluster add aks-$cluster --label $env --upsert
+            done
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)

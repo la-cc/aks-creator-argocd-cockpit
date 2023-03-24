@@ -11,4 +11,4 @@ patches:
 - path: patches/external-dns-values.yaml
 {% endif %}
 - path: patches/cert-manager-values.yaml
-- path: patches/ingress-nginx-values.yam
+- path: patches/ingress-nginx-values.yaml
