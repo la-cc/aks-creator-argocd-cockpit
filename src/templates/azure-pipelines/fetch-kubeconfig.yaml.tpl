@@ -32,7 +32,7 @@ steps:
             rm argocd-linux-amd64
           targetType: inline
       - task: Bash@3
-        displayName: ${{ variables.clusterName }} - Login vs azure kubernetes cluster
+        displayName: ${{ variables.clusterName }}  Login (Cockpit) vs azure kubernetes cluster
         inputs:
           script: |
             az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID >> /dev/null 2>&1
@@ -46,7 +46,7 @@ steps:
           ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: ${{ variables.clusterName }} - Convert kubeconfig to spn (Kubelogin)
+        displayName: ${{ variables.clusterName }} Convert (Cockpit) kubeconfig to spn (Kubelogin)
         inputs:
           script: |
             kubelogin convert-kubeconfig -l spn

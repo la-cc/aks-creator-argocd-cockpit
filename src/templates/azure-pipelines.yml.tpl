@@ -4,6 +4,7 @@ resources:
   pipelines:
   - pipeline: apply-argocd-cockpit # Name of the pipeline resource.
     source: terraform-cicd # The name of the pipeline referenced by this pipeline resource.
+    trigger: true # Run app-ci pipeline when any run of terraform-cicd completes
 
 
 variables:

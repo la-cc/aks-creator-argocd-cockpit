@@ -49,7 +49,9 @@ steps:
         displayName: Patch Argo CD Secret - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'
+            if kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'; then
+              for ((i=30;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
+              kubectl -n argocd patch secret  argocd-secret  --type='json' -p='[{"op" : "replace" ,"path" : "/data/oidc.azure.clientSecret" ,"value" : "'$AZURE_AAD_SSO_APP_SECRET'"}]'
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
@@ -92,7 +94,9 @@ steps:
         displayName: Apply Service Context - ${{ cluster.name }}
         inputs:
           script: |
-            kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer
+            if kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer; then
+              for ((i=30;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
+              kubectl apply -k argocd/env/${{ cluster.environment }}/manifests/clusterissuer
           targetType: inline
         env:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
