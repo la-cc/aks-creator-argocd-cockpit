@@ -31,6 +31,7 @@ clusters:
         clientID: <>
         rbac_role_group_mapping: <>
       ingress:
+        enable: true
         host: argocd.<>
         issuer: letsencrypt-dns
       externalDNS:
@@ -53,6 +54,6 @@ clusters:
       ksc:
         enable: true
         url: <>
-        git_repository_private: <false>
+        git_repository_private: <>
         pat: <>
         organization: <>

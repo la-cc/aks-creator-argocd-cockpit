@@ -22,7 +22,7 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-  - job: deploy_kubernetes_cluster
+  - job: apply_argocd_cockpit
     workspace:
       clean: all
     steps:

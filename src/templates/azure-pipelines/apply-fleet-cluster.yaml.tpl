@@ -43,6 +43,7 @@ steps:
           ARM_CLIENT_ID: $(ARM_CLIENT_ID)
           ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
+{% if cluster.argocd.ingress.enable %}
       - task: Bash@3
         displayName: Establish Connection to Fleet - ${{ cluster.name }}
         inputs:
@@ -61,6 +62,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_ID: $(ARM_CLIENT_ID)
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
+{% endif %}
       - task: Bash@3
         displayName: ${{ cluster.name }} - End
         inputs:

@@ -203,7 +203,13 @@ clusters:
     azure_public_dns:
       enable: true
       azure_cloud_zone: <>
-    node_pools: {}
+    node_pools:
+      enable_node_pools: true
+      pool:
+        - name: <"internal">
+          min_count: <1>
+          max_count: <3>
+          node_count: <2>
     # Argo CD Cockpit related data
     argocd:
       oidc_config:
