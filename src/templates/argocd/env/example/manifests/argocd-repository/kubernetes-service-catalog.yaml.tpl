@@ -7,7 +7,7 @@ metadata:
     argocd.argoproj.io/secret-type: repository
 stringData:
   url: {{ cluster.argocd.ksc.url }}
-{% if cluster.service_catalog.argocd_core.git_repository_private %}
+{% if cluster.argocd.ksc.git_repository_private %}
   password: {{ cluster.argocd.ksc.pat }}
   username: {{ cluster.argocd.ksc.organization }}
 {% endif %}
