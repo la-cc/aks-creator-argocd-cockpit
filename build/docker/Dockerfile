@@ -57,6 +57,9 @@ RUN pip3 install azure-cli
 # Installing Terraform
 RUN apk add --update terraform
 
+#Install Kustomize
+RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
+    tar xfv kustomize_v5.0.0_linux_amd64.tar.gz -C /usr/local/bin
 
 # Copy validation schemas
 COPY src/python/bootstrap/schemas /usr/local/lib/python3.10/schemas
