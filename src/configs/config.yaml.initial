@@ -53,6 +53,6 @@ clusters:
       ksc:
         enable: true
         url: <>
+        git_repository_private: <false>
         pat: <>
         organization: <>
-        

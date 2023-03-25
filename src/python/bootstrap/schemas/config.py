@@ -74,6 +74,7 @@ config_schema = Schema({
                 Optional("ksc"): {
                     Optional("enable", default=False): bool,
                     Optional("url"): str,
+                    Optional("git_repository_private", default=False): bool,
                     Optional("pat"): str,
                     Optional("organization"): str
                 }
