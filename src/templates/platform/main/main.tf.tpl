@@ -23,7 +23,7 @@ module "network" {
 }
 
 module "kubernetes" {
-  source = "github.com/la-cc/terraform-azure-kubernetes?ref=1.1.2"
+  source = "github.com/la-cc/terraform-azure-kubernetes?ref=1.1.3"
 
   aks_name               = format("aks-%s-%s", var.name, terraform.workspace)
   resource_group_name    = module.resource_group.name
