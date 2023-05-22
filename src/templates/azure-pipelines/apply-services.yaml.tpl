@@ -7,7 +7,7 @@ parameters:
 steps:
   - ${{ each cluster in parameters.clusters }}:
       - task: Bash@3
-        displayName: ${{ cluster.name }} - Start
+        displayName: Start Apply Services - ${{ cluster.name }}
         inputs:
           script: |
             echo "######### Start Apply Services for ${{ cluster.name }} ############"
@@ -25,7 +25,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: Install Argo CD (incl. CRD) - ${{ cluster.name }}
+        displayName: Install Argo CD (incl. CRD)
         inputs:
           script: |
             kubectl apply -k argocd/env/${{ cluster.environment }}
@@ -36,7 +36,7 @@ steps:
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       #apply manifests folder
       - task: Bash@3
-        displayName: Apply Argo CD Manifests - ${{ cluster.name }}
+        displayName: Apply Argo CD Manifests
         inputs:
           script: |
             kubectl apply -k argocd/env/${{ cluster.environment }}/manifests
@@ -46,7 +46,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: Patch Argo CD Secret - ${{ cluster.name }}
+        displayName: Patch Argo CD Secret
         inputs:
           script: |
             for ((i=15;i>0;i--)); do printf '%s %s\r' "$i" 'seconds pending'; sleep 1; done; echo
@@ -58,7 +58,7 @@ steps:
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
           AZURE_AAD_SSO_APP_SECRET: $(AZURE_AAD_SSO_APP_SECRET_${{ cluster.environment }})
       - task: Bash@3
-        displayName: Patch Argo CD ConfigMaps - ${{ cluster.name }}
+        displayName: Patch Argo CD ConfigMaps
         inputs:
           script: |
             kubectl -n argocd apply -f argocd/env/${{ cluster.environment }}/oidc-azure-ad/argocd-cm.yaml
@@ -69,7 +69,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: Restart Argo- and Dex-Server - ${{ cluster.name }}
+        displayName: Restart Argo- and Dex-Server
         inputs:
           script: |
             kubectl rollout restart deployment argocd-server -n argocd
@@ -80,7 +80,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: Apply Helm Charts - ${{ cluster.name }}
+        displayName: Apply Helm Charts
         inputs:
           script: |
             kustomize build --enable-helm argocd/env/${{ cluster.environment }}/manifests/base-deployment/generator/excelsior/ | kubectl apply -f -
@@ -101,7 +101,7 @@ steps:
           AAD_SERVICE_PRINCIPAL_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: ${{ cluster.name }} - End
+        displayName: End Apply Services - ${{ cluster.name }}
         inputs:
           script: |
             echo "######### End Apply Services for ${{ cluster.name }} ############"

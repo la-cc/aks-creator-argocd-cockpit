@@ -7,13 +7,13 @@ parameters:
 steps:
   - ${{ each cluster in parameters.clusters }}:
       - task: Bash@3
-        displayName: ${{ cluster.name }} - Start
+        displayName: Start Fetch Kubeconfig - ${{ cluster.name }}
         inputs:
           script: |
             echo "######### Start Fetch Kubeconfig for ${{ cluster.name }} ############"
           targetType: inline
       - task: Bash@3
-        displayName: ${{ cluster.name }} - Install kubelogin
+        displayName: Install kubelogin
         inputs:
           script: |
             echo "######### Intsall kubelogin ############"
@@ -23,7 +23,7 @@ steps:
                 && mv bin/linux_amd64/kubelogin /usr/local/bin
           targetType: inline
       - task: Bash@3
-        displayName: ${{ cluster.name }} - Install argocd cli
+        displayName: Install argocd cli
         inputs:
           script: |
             echo "######### Intsall argocd cli ############"
@@ -32,7 +32,7 @@ steps:
             rm argocd-linux-amd64
           targetType: inline
       - task: Bash@3
-        displayName: ${{ variables.clusterName }}  Login (Cockpit) vs azure kubernetes cluster
+        displayName: Login (Cockpit) vs azure kubernetes cluster
         inputs:
           script: |
             az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID >> /dev/null 2>&1
@@ -46,7 +46,7 @@ steps:
           ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: ${{ variables.clusterName }} Convert (Cockpit) kubeconfig to spn (Kubelogin)
+        displayName: Convert (Cockpit) kubeconfig to spn (Kubelogin)
         inputs:
           script: |
             kubelogin convert-kubeconfig -l spn
@@ -58,7 +58,7 @@ steps:
           ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
           KUBECONFIG: ${{ cluster.repositoryName }}/kubeconfig
       - task: Bash@3
-        displayName: ${{ cluster.name }} - End
+        displayName: End Fetch Kubeconfig - ${{ cluster.name }}
         inputs:
           script: |
             echo "######### End Fetch Kubeconfig for ${{ cluster.name }} ############"
