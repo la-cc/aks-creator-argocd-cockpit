@@ -28,3 +28,26 @@ resource "azurerm_role_assignment" "main_mi_network_contributor" {
     module.kubernetes
   ]
 }
+
+resource "azurerm_role_assignment" "key_vault_officer" {
+
+  scope                = module.key_vault.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azurerm_kubernetes_cluster.main.kubelet_identity[0].object_id
+}
+
+
+resource "azurerm_role_assignment" "key_vault_secrets_officer_sp" {
+
+  scope                = module.key_vault.id
+  role_definition_name = "Key Vault Secrets Officer"
+  principal_id         = data.azuread_service_principal.devops_terraform_cicd.object_id
+}
+
+
+resource "azurerm_role_assignment" "key_vault_admin" {
+
+  scope                = module.key_vault.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azuread_group.it_adm.object_id
+}

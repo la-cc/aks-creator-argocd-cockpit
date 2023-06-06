@@ -154,3 +154,67 @@ variable "tags" {
     PoC         = "AKS"
   }
 }
+
+
+########## Azure Key Vault ##########
+
+variable "network_acls" {
+
+  type = object({
+    bypass                     = string,
+    default_action             = string,
+    ip_rules                   = list(string),
+    virtual_network_subnet_ids = list(string),
+  })
+
+  default = {
+    bypass                     = "AzureServices"
+    default_action             = "Allow"
+    ip_rules                   = []
+    virtual_network_subnet_ids = []
+  }
+
+  description = "(Optional) A network_acls block as defined below"
+
+}
+
+variable "key_vault_admin_object_ids" {
+  type        = list(string)
+  description = "Optional list of object IDs of users or groups who should be Key Vault Administrators. Should only be set, if enable_rbac_authorization is set to true."
+  default     = []
+}
+
+variable "role_definition_name" {
+  type        = string
+  description = "The Scoped-ID of the Role Definition. Changing this forces a new resource to be created. Conflicts with role_definition_name"
+  default     = "Key Vault Administrator"
+}
+
+variable "enable_rbac_authorization" {
+  type        = bool
+  description = "Boolean flag to specify whether Azure Key Vault uses Role Based Access Control (RBAC) for authorization of data actions."
+  default     = true
+}
+
+
+########## Azure AD User ##########
+variable "azuread_user_name" {
+
+  type    = string
+  default = "{{ azuread_user.name }}"
+
+}
+
+variable "azuread_display_name" {
+
+  type    = string
+  default = "{{ azuread_user.display_name }}"
+
+}
+
+variable "mail_nickname" {
+
+  type    = string
+  default = "{{ azuread_user.mail_nickname }}"
+
+}

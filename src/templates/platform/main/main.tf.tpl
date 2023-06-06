@@ -52,3 +52,28 @@ module "kubernetes" {
 
 }
 
+
+module "resource_group_infra" {
+  source = "github.com/la-cc/terraform-azure-resource-group?ref=1.0.0"
+
+  name     = format("rg-%s-%s-%s", var.name, terraform.workspace, "infrastructure")
+  location = var.location
+  tags     = var.tags
+
+}
+
+module "key_vault" {
+  source = "github.com/la-cc/terraform-azure-key-vault?ref=1.0.0"
+
+  name                       = "{{ key_vault.name }}"
+  resource_group_name        = module.resource_group_infra.name
+  network_acls               = var.network_acls
+  enable_rbac_authorization  = var.enable_rbac_authorization
+  key_vault_admin_object_ids = [data.azuread_group.it_adm.object_id]
+
+  depends_on = [
+    module.resource_group_infra
+  ]
+
+}
+

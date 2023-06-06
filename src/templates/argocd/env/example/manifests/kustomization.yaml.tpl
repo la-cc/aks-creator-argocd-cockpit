@@ -4,6 +4,5 @@ kind: Kustomization
 namespace: argocd
 resources:
 {% if cluster.argocd.ksc.enable %}
-  - argocd-repository/kubernetes-service-catalog.yaml
   - argocd-applicationset/kubernetes-service-catalog-applicationsets.yaml
 {% endif %}

@@ -5,6 +5,7 @@ resources:
   - ../../base/cert-manager
   - ../../base/external-dns
   - ../../base/ingress-nginx
+  - ../../base/external-secrets
 
 patches:
 {% if cluster.argocd.externalDNS.enable %}
@@ -12,3 +13,4 @@ patches:
 {% endif %}
 - path: patches/cert-manager-values.yaml
 - path: patches/ingress-nginx-values.yaml
+- path: patches/external-secrets-values.yaml

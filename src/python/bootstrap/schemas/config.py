@@ -9,6 +9,23 @@ config_schema = Schema({
 
     },
 
+    Optional("key_vault"): {
+        Optional("name"): str,
+        Optional("git_repo_url"): str,
+        Optional("service_principal_name"): str,
+        Optional("svc_user_pw_name"): str,
+        Optional("admin_object_ids"): {
+            Optional("enable", default=False): bool,
+            Optional("ID"): str,
+            Optional("name"): str,
+        }
+    },
+    Optional("azuread_user"): {
+        Optional("name"): str,
+        Optional("display_name"): str,
+        Optional("mail_nickname"): str,
+    },
+
     "clusters": [
         {
             "name": str,
@@ -56,6 +73,10 @@ config_schema = Schema({
                     Optional("subscriptionID"): str,
                     Optional("domain_filters"): list,
                     Optional("txtOwnerId"): str
+                },
+                Optional("externalSecrets"): {
+                    Optional("keyVaultURL"): str,
+                    Optional("name"): str
                 },
 
                 Optional("security"): {
