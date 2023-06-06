@@ -65,7 +65,7 @@ module "resource_group_infra" {
 module "key_vault" {
   source = "github.com/la-cc/terraform-azure-key-vault?ref=1.0.0"
 
-  name                       = "{{ key_vault.name }}"
+  name                       = var.key_vault_name
   resource_group_name        = module.resource_group_infra.name
   network_acls               = var.network_acls
   enable_rbac_authorization  = var.enable_rbac_authorization

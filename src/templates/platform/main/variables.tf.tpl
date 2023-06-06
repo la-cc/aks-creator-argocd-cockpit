@@ -196,6 +196,12 @@ variable "enable_rbac_authorization" {
   default     = true
 }
 
+variable "key_vault_name" {
+  type        = string
+  default     = "{{ key_vault.name }}"
+  description = "Specifies the name of the Key Vault. Changing this forces a new resource to be created."
+}
+
 
 ########## Azure AD User ##########
 variable "azuread_user_name" {
