@@ -26,6 +26,12 @@ config_schema = Schema({
         Optional("mail_nickname"): str,
     },
 
+    Optional("azure_tags"): {
+        Optional("maintainer", default="Platform Team"): str,
+        Optional("owner", default="Platform Team"): str,
+
+    }
+
     "clusters": [
         {
             "name": str,
@@ -98,12 +104,6 @@ config_schema = Schema({
                     Optional("git_repository_private", default=False): bool,
                     Optional("pat"): str,
                     Optional("organization"): str
-                },
-
-                Optional("tags"): {
-                    Optional("maintainer", default="Platform Team"): str,
-                    Optional("owner", default="Platform Team"): str,
-
                 }
             }
         }
@@ -112,6 +112,5 @@ config_schema = Schema({
     Optional("azure_devops_pipeline"): {
         Optional("enable"): bool,
         Optional("library_group"): str,
-
     }
 })
