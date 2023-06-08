@@ -30,7 +30,7 @@ config_schema = Schema({
         Optional("maintainer", default="Platform Team"): str,
         Optional("owner", default="Platform Team"): str,
 
-    }
+    },
 
     "clusters": [
         {
