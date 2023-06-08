@@ -41,8 +41,8 @@ node_pools = {
 {% endif %}
 
 tags = {
-  Maintainer  = "Platform Team"
-  Owner       = "Team-X"
+  Maintainer  = "{{ cluster.tags.maintainer }}"
+  Owner       = "{{ cluster.tags.owner }}"
   PoC         = "AKS"
   TF-Managed  = "true"
   Environment = "{{ cluster.name }}-{{ cluster.stage }}"

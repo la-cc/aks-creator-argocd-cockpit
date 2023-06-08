@@ -98,6 +98,12 @@ config_schema = Schema({
                     Optional("git_repository_private", default=False): bool,
                     Optional("pat"): str,
                     Optional("organization"): str
+                },
+
+                Optional("tags"): {
+                    Optional("maintainer", default="Platform Team"): str,
+                    Optional("owner", default="Platform Team"): str,
+
                 }
             }
         }
