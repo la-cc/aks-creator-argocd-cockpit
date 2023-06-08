@@ -43,11 +43,3 @@ resource "azurerm_role_assignment" "key_vault_secrets_officer_sp" {
   role_definition_name = "Key Vault Secrets Officer"
   principal_id         = data.azuread_service_principal.devops_terraform_cicd.object_id
 }
-
-
-resource "azurerm_role_assignment" "key_vault_admin" {
-
-  scope                = module.key_vault.id
-  role_definition_name = "Key Vault Administrator"
-  principal_id         = data.azuread_group.it_adm.object_id
-}

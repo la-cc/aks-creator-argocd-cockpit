@@ -9,6 +9,12 @@ vm_size              = "{{ cluster.vm_size }}"
 local_account_disabled = true
 admin_list             = {{ cluster.admin_list | tojson }}
 
+azuread_display_name   = "{{ azuread_user.display_name }}"
+azuread_user_name      = "{{ azuread_user.name }}"
+mail_nickname          = "{{ azuread_user.mail_nickname }}"
+key_vault_name         = "{{ key_vault.name }}"
+
+
 {% if cluster.node_pools.enable_node_pools %}
 enable_node_pools    = "{{ cluster.node_pools.enable_node_pools |lower }}"
 
@@ -35,7 +41,7 @@ node_pools = {
 {% endif %}
 
 tags = {
-  Maintainer  = "Team-X"
+  Maintainer  = "Platform Team"
   Owner       = "Team-X"
   PoC         = "AKS"
   TF-Managed  = "true"
