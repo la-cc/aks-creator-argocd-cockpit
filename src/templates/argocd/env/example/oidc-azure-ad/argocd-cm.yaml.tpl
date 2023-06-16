@@ -14,6 +14,7 @@ data:
         command: [ "sh", "-c" ]
         args: [ "kustomize build --enable-helm" ]
   url: {{ cluster.argocd.oidc_config.url }} # Replace with the external base URL of your Argo CD
+  application.instanceLabelKey: {{ cluster.argocd.oidc_config.instanceLabelKey }}
   oidc.config: |
     name: Azure
     issuer: https://login.microsoftonline.com/{{ cluster.argocd.oidc_config.tenantID }}/v2.0

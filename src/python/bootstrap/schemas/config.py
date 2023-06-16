@@ -61,6 +61,7 @@ config_schema = Schema({
             Optional("argocd"): {
                 Optional("oidc_config"): {
                     Optional("enable"): bool,
+                    Optional("instanceLabelKey", default="orga/appname"): str,
                     Optional("url"): str,
                     Optional("tenantID"): str,
                     Optional("clientID"): str,
