@@ -23,9 +23,6 @@ function startInteractive {
 	echo "Setting the variable is optional and should only be set if different stages are to be mapped to different terraformstates"
 	echo -n "The environments will be used to create terraform workspaces for multiple environments e.g. development production: "
 	read -r
-	export ENVIRONMENTS=${REPLY}
-	echo "The location that resourcegroup and storageaccount will be bootstraped"
-	read -r
 	export LOCATION=${REPLY}
 	echo "The container in the storageaccount that will be used safe the terraformstate"
 	echo -n "If you dont have terraform workspaces then the default workspace will be mapped to set name."
@@ -68,50 +65,6 @@ function azCreateBlobContainer {
 	az storage container create --name $CONTAINER_NAME --account-name "$STORAGE_ACCOUNT_NAME" --account-key "$ACCOUNT_KEY"
 }
 
-function terraformCreateWorkspace {
-
-	if [[ -z $ENVIRONMENTS ]]; then
-		echo "use terraform default workspace"
-	else
-		for workspace in $ENVIRONMENTS; do
-			terraform -chdir="$temp_dir" init
-			terraform -chdir="$temp_dir" workspace new "$workspace"
-			echo "created workspace: $workspace"
-		done
-	fi
-
-	exit 1
-}
-
-function terraformInit {
-
-	if [[ -z $ENVIRONMENTS ]]; then
-		echo "init and create a tfstate terraform.tfstate in the blob"
-		terraform -chdir="$temp_dir" init
-
-	else
-		for workspace in $ENVIRONMENTS; do
-			echo "init and create a tfstate terraform.tfstateenv:$workspace in the blob"
-			terraform -chdir="$temp_dir" init
-		done
-	fi
-
-}
-
-function azCreateTerraformBackendTemp {
-	temp_dir=$(mktemp -d)
-
-	echo " terraform {
-     backend \"azurerm\" {
-    resource_group_name  = \"$RESOURCE_GROUP_NAME\"
-    storage_account_name = \"$STORAGE_ACCOUNT_NAME\"
-    container_name       = \"$CONTAINER_NAME\"
-    key                  = \"terraform.tfstate\" # refers to the file name
-  }
-}" >"$temp_dir"/terraform.tf
-
-}
-
 function errorEcho {
 	echo "ERROR: ${1}" 1>&2
 	exit 1
@@ -146,11 +99,6 @@ function usage() {
 	echo "CONTAINER_NAME: e.g. tfstate"
 	echo "--------------------------------------------------------"
 	echo " "
-	echo "--------------- Optional-Variables: -------------------"
-	echo "ENVIRONMENTS (optinal) e.g. \"development production\" "
-	echo "Note: if you dont want use separate terraform-workspaces, then let it empty "
-	echo "--------------------------------------------------------"
-	echo " "
 	echo "To get the Subscription-ID and access to the create the resources, you run first:"
 	echo "az login"
 	echo "you must login with as a user with following access-rights:"
@@ -176,9 +124,6 @@ function startBootstrapping() {
 	azCreateStorageAccount
 	azGetStorageAccountKey
 	azCreateBlobContainer
-	azCreateTerraformBackendTemp
-	terraformInit
-	terraformCreateWorkspace
 
 }
 

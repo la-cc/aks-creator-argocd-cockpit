@@ -8,7 +8,7 @@ resources:
   - ../../base/external-secrets
 
 patches:
-{% if cluster.argocd.externalDNS.enable %}
+{% if cluster.argocd.externalDNS is defined %}
 - path: patches/external-dns-values.yaml
 {% endif %}
 - path: patches/cert-manager-values.yaml

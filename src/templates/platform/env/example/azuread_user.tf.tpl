@@ -1,4 +1,4 @@
-
+{% if cluster.azuread_user is defined %}
 resource "random_password" "password" {
   length = 24
 }
@@ -9,3 +9,4 @@ resource "azuread_user" "svc_user" {
   mail_nickname       = var.mail_nickname
   password            = random_password.password.result
 }
+{% endif %}

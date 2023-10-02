@@ -4,7 +4,7 @@ metadata:
   name: external-secrets
 releaseName: external-secrets
 name: external-secrets
-version: 0.8.*
+version: 0.9.*
 repo: https://charts.external-secrets.io
 #valuesFile: values.yaml
 valuesInline: {}

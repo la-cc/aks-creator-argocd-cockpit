@@ -1,3 +1,4 @@
+{% if cluster.azure_public_dns is defined %}
 resource "azurerm_role_assignment" "dns_zone_contributor" {
   scope                = data.azurerm_resource_group.main.id
   role_definition_name = "DNS Zone Contributor"
@@ -7,6 +8,7 @@ resource "azurerm_role_assignment" "dns_zone_contributor" {
     module.kubernetes
   ]
 }
+{% endif %}
 #assign network contributor role to  enterprise-application on main-rg (rg-project-stage)
 resource "azurerm_role_assignment" "main_rg_ea_network_contributor" {
   scope                = data.azurerm_resource_group.main.id

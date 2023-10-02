@@ -1,10 +1,10 @@
-{% if azure_backend.enable %}
+{% if cluster.azure_backend is defined %}
 terraform {
   backend "azurerm" {
-    resource_group_name  = "{{ azure_backend.resource_group_name_backend }}"
-    storage_account_name = "{{ azure_backend.storage_account_name }}"
+    resource_group_name  = "{{ cluster.azure_backend.resource_group_name_backend }}"
+    storage_account_name = "{{ cluster.azure_backend.storage_account_name }}"
     container_name       = "tfstate"
-    key                  = "terraform.tfstate" # refers to the file name
+    key                  = "{{ cluster.azure_backend.stage }}" # refers to the file name
   }
 }
 {% endif %}

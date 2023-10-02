@@ -13,7 +13,7 @@ steps:
             echo "######### Start Apply Fleet Clusters for ${{ cluster.name }} ############"
           targetType: inline
       - task: Bash@3
-        displayName: ${{ cluster.name }} Login (Fleet) vs azure kubernetes cluster
+        displayName: Login (Fleet) vs azure kubernetes cluster for ${{ cluster.name }}
         inputs:
           script: |
             az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID >> /dev/null 2>&1
@@ -24,12 +24,12 @@ steps:
               rm cluster.csv
             fi
 
-            az aks list | jq '.[].name' -r | grep -v "aks-${{ cluster.repositoryName }}-development" | grep -v "aks-${{ cluster.repositoryName }}-production" | grep -i "${{ cluster.environment }}" | sed 's/aks-//' > cluster.csv
+            az aks list | jq '.[].name' -r | grep -v "aks-${{ cluster.repositoryName }}-development"| grep -v "aks-${{ cluster.repositoryName }}-development" | grep -v "aks-${{ cluster.repositoryName }}-production" | grep -v "excelsior" | grep -i "${{ cluster.environment }}" | sed 's/aks-//' > cluster.csv
 
             cat cluster.csv | while read -r item;
             do
               cluster=$(echo $item | awk -F' ' '{print $1}')
-              az aks get-credentials --resource-group rg-$cluster --name aks-$cluster
+              az aks get-credentials --resource-group rg-$cluster-platform --name aks-$cluster || true
             done
           targetType: inline
         env:

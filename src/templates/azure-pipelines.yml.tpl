@@ -19,7 +19,7 @@ variables:
 {% endraw %}
 
 pool:
-  vmImage: ubuntu-latest
+  name: HPA-Azure-Linux-VM
 
 jobs:
   - job: apply_argocd_cloud_cockpit

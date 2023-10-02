@@ -1,4 +1,4 @@
-{% if cluster.argocd.oidc_config.enable %}
+{% if cluster.argocd.oidc_config is defined %}
 apiVersion: v1
 kind: ConfigMap
 metadata:

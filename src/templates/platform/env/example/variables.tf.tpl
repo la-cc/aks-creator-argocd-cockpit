@@ -1,5 +1,5 @@
 variable "name" {
-  type    = string
+  type = string
 }
 
 variable "orchestrator_version" {
@@ -53,13 +53,13 @@ variable "load_balancer_sku" {
   description = "Specifies the SKU of the Load Balancer used for this Kubernetes Cluster. Possible values are basic and standard. Defaults to standard"
 }
 
-{% if cluster.azure_public_dns.enable %}
+
 variable "azure_cloud_zone" {
 
-  type    = string
+  type = string
 
 }
-{% endif %}
+
 
 variable "vm_size" {
 
@@ -75,7 +75,7 @@ variable "max_pods_per_node" {
 
 variable "node_pool_count" {
 
-  type    = number
+  type = number
 }
 
 variable "lock_name" {
@@ -94,6 +94,15 @@ variable "notes" {
   type        = string
   description = "Specifies some notes about the lock. Maximum of 512 characters. Changing this forces a new resource to be created."
   default     = "Locked, if you want remove the resourcegroup or a resource in this group, you must delete the lock first"
+}
+
+variable "authorized_ip_ranges" {
+
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+  description = <<-EOT
+    Set of authorized IP ranges to allow access to API server, e.g. ["198.51.100.0/24"].
+    EOT
 }
 
 variable "network_plugin" {
@@ -155,7 +164,7 @@ variable "tags" {
   }
 }
 
-
+{% if cluster.azure_key_vault is defined %}
 ########## Azure Key Vault ##########
 
 variable "network_acls" {
@@ -200,8 +209,9 @@ variable "key_vault_name" {
   type        = string
   description = "Specifies the name of the Key Vault. Changing this forces a new resource to be created."
 }
+{% endif %}
 
-
+{% if cluster.azuread_user is defined %}
 ########## Azure AD User ##########
 variable "azuread_user_name" {
 
@@ -222,3 +232,50 @@ variable "mail_nickname" {
   description = "value of the mail nickname"
 
 }
+{% endif %}
+
+
+{% if cluster.argocd_aad_apps is defined %}
+########## Azure AD Argo CD Enterprise App + App Registration ##########
+variable "argocd_aad_app" {
+  type = map(object({
+    display_name                 = string
+    redirect_uris                = list(string)
+    logout_url                   = string
+    app_role_assignment_required = bool
+    app_owners                   = list(string)
+    roles = map(object({
+      app_role_id         = string
+      principal_object_id = string
+    }))
+
+  }))
+
+  default = {}
+}
+
+variable "argocd_app_roles" {
+  type = map(object({
+    allowed_member_types = list(string)
+    description          = string
+    display_name         = string
+    enabled              = bool
+    id                   = string
+    value                = string
+
+
+  }))
+  default = {
+
+    "argocd_admin" = {
+      allowed_member_types = ["User"]
+      description          = "ArgodCD Admin Role"
+      display_name         = "ArgoCD Admin"
+      enabled              = true
+      id                   = "1dc5dd87-3e3a-491c-9cd1-bdea64febe6b"
+      value                = "Admin"
+    }
+
+  }
+}
+{% endif %}

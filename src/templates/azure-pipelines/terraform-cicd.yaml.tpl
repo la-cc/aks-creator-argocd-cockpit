@@ -1,4 +1,4 @@
-{% if azure_devops_pipeline.enable %}
+{% if azure_devops_pipeline is defined %}
 trigger:
   batch: true
   branches:
@@ -31,9 +31,8 @@ stages:
         steps:
           - checkout: self
           - script: |
-              terraform -chdir=platform/main init
-              terraform -chdir=platform/main workspace select ${{ variables.environment }} || terraform -chdir=platform/main workspace new ${{ variables.environment }}
-              terraform -chdir=platform/main validate
+              terraform -chdir=platform/env/${{ variables.environment }} init
+              terraform -chdir=platform/env/${{ variables.environment }} validate
             name: "ValidateTerraform"
             displayName: "Validate Terraform"
             env:
@@ -53,11 +52,10 @@ stages:
         steps:
           - checkout: self
           - script: |
-              mkdir -p platform/main/build
-              terraform -chdir=platform/main init
-              terraform -chdir=platform/main workspace select ${{ variables.environment }} || terraform -chdir=platform/main workspace new ${{ variables.environment }}
-              terraform -chdir=platform/main plan -var-file=env/${{ variables.environment }}/terraform.tfvars -out=$(Build.SourceVersion).plan
-              cp platform/main/$(Build.SourceVersion).plan platform/main/build/
+              mkdir -p platform/env/${{ variables.environment }}/build
+              terraform -chdir=platform/env/${{ variables.environment }} init
+              terraform -chdir=platform/env/${{ variables.environment }} plan -var-file=terraform.tfvars -out=$(Build.SourceVersion).plan
+              cp platform/env/${{ variables.environment }}/$(Build.SourceVersion).plan platform/env/${{ variables.environment }}/build
             name: "PlanTerraform"
             displayName: "Terraform Plan"
             env:
@@ -65,7 +63,7 @@ stages:
               ARM_CLIENT_SECRET: $(ARM_CLIENT_SECRET)
               ARM_TENANT_ID: $(ARM_TENANT_ID)
               ARM_SUBSCRIPTION_ID: $(ARM_SUBSCRIPTION_ID)
-          - publish: $(Build.SourcesDirectory)/platform/main/build
+          - publish: $(Build.SourcesDirectory)/platform/env/${{ variables.environment }}/build
             artifact: $(Build.SourceVersion).plan
 {% endraw %}
   - stage: apply
@@ -85,10 +83,9 @@ stages:
                 - download: current
                   artifact: $(Build.SourceVersion).plan
                 - script: |
-                    cp $(Pipeline.Workspace)/$(Build.SourceVersion).plan/$(Build.SourceVersion).plan platform/main/
-                    terraform -chdir=platform/main init
-                    terraform -chdir=platform/main workspace select ${{ variables.environment }} || terraform -chdir=platform/main workspace new ${{ variables.environment }}
-                    terraform -chdir=platform/main apply $(Build.SourceVersion).plan
+                    cp $(Pipeline.Workspace)/$(Build.SourceVersion).plan/$(Build.SourceVersion).plan platform/env/${{ variables.environment }}
+                    terraform -chdir=platform/env/${{ variables.environment }} init
+                    terraform -chdir=platform/env/${{ variables.environment }} apply $(Build.SourceVersion).plan
                   name: "ApplyTerraform"
                   displayName: "Terraform Apply"
                   env:

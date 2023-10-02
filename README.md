@@ -1,4 +1,4 @@
-# AKS Creator
+# AKS Creator WIP!!!
 
 This tool image allows you to create and manage the configuration files of a AKS Kubernetes repository.
 
@@ -35,7 +35,7 @@ a configuration file is required.
 Open the file `.igor.sh` in your preferred editor and use the following settings to configure `igor`:
 
     # select docker image
-    IGOR_DOCKER_IMAGE=ghcr.io/la-cc/aks-creator-core:0.0.2
+    IGOR_DOCKER_IMAGE=ghcr.io/la-cc/aks-creator-argocd-cockpit:0.0.X
     IGOR_DOCKER_COMMAND=                                  # run this command inside the docker container
     IGOR_DOCKER_PULL=0                                    # force pulling the image before starting the container (0/1)
     IGOR_DOCKER_RM=1                                      # remove container on exit (0/1)
@@ -123,124 +123,110 @@ To do so simply execute the script (from inside the aks-creator-core container):
 If go through the step [0. Create a Azure Backend for Terraform State (Optional)](#ConfigAzureBackend) then you need to execute the following commands (from inside the aks-creator-core container or local terraform binary):
 
     terraform init
-    terraform select workspace <STAGE>
-    terraform plan -var-file=env/<STAGE>/terraform.tfvars
+    terraform plan -var-file=terraform.tfvars
 
 If the plan is fine for you, then apply it with:
 
-    terraform apply -var-file=env/<STAGE>/terraform.tfvars -auto-approve
+    terraform apply -var-file=terraform.tfvars -auto-approve
 
 ### 4.2 Terraform Apply + Local Backend
 
 If you don't create azure backend then execute the following commands (from inside the aks-creator-core container or local terraform binary):
 
     terraform init
-    #terraform version < 1.4.*
-    terraform workspace new <STAGE>
-    #terraform version  >= 1.4.*
-    terraform workspace select -or-create <STAGE>
-    terraform plan -var-file=env/<STAGE>/terraform.tfvars
+    terraform plan -var-file=terraform.tfvars
 
 If the plan is fine for you, then apply it with:
 
-    terraform apply -var-file=env/<STAGE>/terraform.tfvars -auto-approve
+    terraform apply -var-file=terraform.tfvars -auto-approve
 
 ## <a id="ConfigOptions"></a>00. Configuration Options for `config.yaml`
 
 The following examples show the possible configuration of the templating. The used module itself can be further adjusted or overwritten.
 
-### Minimum necessary configuration
+### configuration:
 
 ```
 ---
-# Azure Backend for Terraform related data
-azure_backend: {}
-
 # Azure Devops Pipeline related data
-azure_devops_pipeline: {}
+azure_devops_pipeline:
+  library_group: <argocd-cockpit>
+
+# Tags for Azure Resources
+azure_tags:
+  maintainer: <"Platform Team">
+  owner: <"YOU?">
 
 # Azure Kubernetes Cluster related data
 clusters:
-  - name: excelsior-cloud
-    stage: development
-    admin_list: []
-    azure_public_dns: {}
+  - name: <excelsior>
+    stage: <development>
+    kubernetes_version: <1.27.1>
+    orchestrator_version: <1.27.1>
+    admin_list: [<"8a70....">]
+    authorized_ip_ranges: [<"1.3.5.7/32">]
+    argocd_aad_apps:
+      - name: <"argocd_aks_development">
+        app_owners:
+          <- "101e7...">
+        logout_url: <"https://argocd.cockpit-dev.example.de:8085/auth/callback">
+        redirect_uris:
+          - <"https://argocd.cockpit-dev.example.com/auth/callback">
+        roles:
+          - name: <"admin_it">
+            id: <"1dc...">
+            object_id: "8a7042f2-9566-4adf-b9cd-272f39837378" #[PORTDESK]_IT43_ADM
+    # Azure AD User related data
+    azuread_user:
+      name: <"svc_portdesk-excelsior-cloud-dev_devops@example.onmicrosoft.com">
+      display_name: <"SVC PortDesk Excelsior Cloud Development (DevOps)">
+      mail_nickname: <"svc_portdesk-excelsior-cloud-dev_devops">
+    # Azure Backend for Terraform related data
+    azure_backend:
+      resource_group_name_backend: <rg-argocd-tf-backend>
+      storage_account_name: <saargocdtfbackend>
+      stage: <development>
+    azure_public_dns:
+      azure_cloud_zone: cockpit-dev.example.com
+    # Azure Key Vault related data
+    azure_key_vault:
+      git_repo_url: <git@ssh.dev.azure.com:v3/YOUR_ORGA/excelsior/cloud-kubernetes-service-catalog>
+      service_principal_name: <"devops-terraform-cicd">
+      svc_user_pw_name: <"svc-excelsior-cloud-user-pw">
+      name: <"kv-excelsior-dev-713">
+      admin_object_ids:
+        ID: <"8a70....">
+        name: <"IT_ADM">
     node_pools: {}
     # Argo CD Cockpit related data
     argocd:
-      oidc_config: {}
-      ingress: {}
-      externalDNS: {}
-      security:
-        clusterIssuerDNS: {}
-        clusterIssuerHTTP: {}
-      ksc: {}
-```
-
-### Maximum possible configuration:
-
-```
----
-# Azure Backend for Terraform related data
-azure_backend:
-  enable: true
-  resource_group_name_backend: <>
-  storage_account_name: <>
-
-# Azure Devops Pipeline related data
-azure_devops_pipeline:
-  enable: true
-  library_group: <>
-
-# Azure Kubernetes Cluster and Argo CD related data
-clusters:
-  - name: excelsior-cloud
-    stage: development
-    admin_list:
-      [
-        "3987rzhdia3d32d2", "sid4934932-2324342"
-      ]
-    azure_public_dns:
-      enable: true
-      azure_cloud_zone: <>
-    node_pools:
-      enable_node_pools: true
-      pool:
-        - name: <"internal">
-          min_count: <1>
-          max_count: <3>
-          node_count: <2>
-    # Argo CD Cockpit related data
-    argocd:
       oidc_config:
-        enable: true
-        url: https://argocd.<>/
-        tenantID: <>
-        clientID: <>
-        rbac_role_group_mapping: <>
+        instanceLabelKey: <example.com/appname>
+        url: <https://argocd.cockpit-dev.example.com/>
+        tenantID: <6af.....>
+        clientID: <674.....>
+        rbac_role_group_mapping: <8a7.....>
       ingress:
-        host: argocd.<>
-        issuer: letsencrypt-dns
+        host: <argocd.cockpit-dev.example.com>
+        issuer: <letsencrypt-dns>
       externalDNS:
-        enable: true
-        resource_group: <>
-        tenantID: <>
-        subscriptionID: <>
+        resource_group: <rg-excelsior-cloud-development>
+        tenantID: <6af....>
+        subscriptionID: <e184c....>
         domain_filters:
-          - <>
-        txtOwnerId: <>
+          - <cockpit-dev.example.com>
+        txtOwnerId: <argocd-cockpit-excelsior-cloud-development>
+      externalSecrets:
+        keyVaultURL: <https://kv-excelsior-dev-713.vault.azure.net/>
+        name: <"cloud-kubernetes-service-catalog">
       security:
-        enable: true
         clusterIssuerDNS:
-          e_mail: <>
-          subscriptionID: <>
-          resourceGroupName: <>
-          hostedZoneName: <>
+          e_mail: <platform.engineer@example.com>
+          subscriptionID: <e184....>
+          resourceGroupName: <rg-excelsior-cloud-development>
+          hostedZoneName: <cockpit-dev.example.com>
         clusterIssuerHTTP:
-          e_mail: <>
+          e_mail: <platform.engineer@example.com>
       ksc:
-        enable: true
-        url: <>
-        pat: <>
-        organization: <>
+        url: <git@ssh.dev.azure.com:v3/YOUR_ORGA/excelsior/cloud-kubernetes-service-catalog>
 ```
