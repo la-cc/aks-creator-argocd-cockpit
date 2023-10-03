@@ -58,9 +58,10 @@ config_schema = Schema({
                     }
                 ]
             },
-            Optional("argocd_aad_apps"): [
+            Optional("argocd_aad_app"): [
                 {
                     Optional("name"): str,
+                    Optional("display_name"): str,
                     Optional("app_owners"): [str],
                     Optional("logout_url"): str,
                     Optional("redirect_uris"): [str],

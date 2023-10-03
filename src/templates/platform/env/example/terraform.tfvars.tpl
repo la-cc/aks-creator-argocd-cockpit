@@ -42,12 +42,13 @@ node_pools = {
 
 {% endif %}
 
+{% if cluster.argocd_aad_app is defined %}
 argocd_aad_app = {
-{%- for app in cluster.argocd_aad_apps %}
+{%- for app in cluster.argocd_aad_app %}
   "{{ app.name }}" = {
     app_owners                   = {{ app.app_owners | tojson }}
     app_role_assignment_required = false
-    display_name                 = "{{ app.name | upper }}"
+    display_name                 = "{{ app.display_name }}"
     logout_url                   = "{{ app.logout_url }}"
     redirect_uris                = {{ app.redirect_uris | tojson }}
     {%- if app.roles %}
@@ -63,6 +64,7 @@ argocd_aad_app = {
   }{% if not loop.last %},{% endif %}
 {%- endfor %}
 }
+{% endif %}
 
 tags = {
   Maintainer  = "{{ azure_tags.maintainer }}"

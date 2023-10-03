@@ -235,7 +235,7 @@ variable "mail_nickname" {
 {% endif %}
 
 
-{% if cluster.argocd_aad_apps is defined %}
+{% if cluster.argocd_aad_app is defined %}
 ########## Azure AD Argo CD Enterprise App + App Registration ##########
 variable "argocd_aad_app" {
   type = map(object({

@@ -1,4 +1,4 @@
-{% if cluster.argocd_aad_apps is defined %}
+{% if cluster.argocd_aad_app is defined %}
 module "argo_aad_app" {
   source = "github.com/Hamburg-Port-Authority/terraform-azure-aad-app?ref=1.0.1"
 

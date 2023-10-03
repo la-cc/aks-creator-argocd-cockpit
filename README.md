@@ -165,8 +165,9 @@ clusters:
     orchestrator_version: <1.27.1>
     admin_list: [<"8a70....">]
     authorized_ip_ranges: [<"1.3.5.7/32">]
-    argocd_aad_apps:
+    argocd_aad_app:
       - name: <"argocd_aks_development">
+        display_name: <"Argo CD Excelsior Developmenr">
         app_owners:
           <- "101e7...">
         logout_url: <"https://argocd.cockpit-dev.example.de:8085/auth/callback">
