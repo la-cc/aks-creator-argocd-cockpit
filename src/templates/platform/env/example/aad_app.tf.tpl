@@ -1,6 +1,6 @@
 {% if cluster.argocd_aad_app is defined %}
 module "argo_aad_app" {
-  source = "github.com/Hamburg-Port-Authority/terraform-azure-aad-app?ref=1.0.1"
+  source = "github.com/Hamburg-Port-Authority/terraform-azure-aad-app?ref=1.0.2"
 
   for_each                     = var.argocd_aad_app
   app_roles                    = var.argocd_app_roles

@@ -23,7 +23,7 @@ module "network" {
 }
 
 module "kubernetes" {
-  source = "github.com/Hamburg-Port-Authority/terraform-azure-kubernetes?ref=1.0.2"
+  source = "github.com/Hamburg-Port-Authority/terraform-azure-kubernetes?ref=1.1.0"
 
   aks_name               = format("aks-%s", var.name)
   resource_group_name    = module.resource_group_platform.name
