@@ -3,8 +3,9 @@ FROM python:3.10-alpine
 ENV PATH=/usr/local/src:$PATH
 
 # Versions
-ARG KUBESEAL_VERSION=0.19.4
-ARG KUBECTL_VERSION=1.26.1
+ARG KUBESEAL_VERSION=0.24.5
+ARG KUBECTL_VERSION=1.28.4
+ARG TERRAFORM_VERSION=1.6.6
 
 
 # install python build dependencies
@@ -55,7 +56,9 @@ RUN   apk update && \
 RUN pip3 install azure-cli
 
 # Installing Terraform
-RUN apk add --update terraform
+RUN curl -O https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
+    && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /usr/bin \
+    && rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 
 #Install Kustomize
 RUN curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.0.0/kustomize_v5.0.0_linux_amd64.tar.gz -o kustomize_v5.0.0_linux_amd64.tar.gz && \
