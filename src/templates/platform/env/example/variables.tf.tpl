@@ -73,6 +73,13 @@ variable "max_pods_per_node" {
   default = 45
 }
 
+variable "node_pool_max_surge" {
+  type        = string
+  default     = "30%"
+  description = "(Required) The maximum number or percentage of nodes which will be added to the Node Pool size during an upgrade."
+
+}
+
 variable "node_pool_count" {
 
   type = number
@@ -118,6 +125,13 @@ variable "network_policy" {
   default = "calico"
 }
 
+variable "azure_policy_enabled" {
+  type        = bool
+  default     = true
+  description = "Enable Azure Policy on the Kubernetes Cluster"
+
+}
+
 variable "enable_node_pools" {
 
   type        = bool
@@ -141,6 +155,7 @@ variable "node_pools" {
     os_disk_size_gb        = string
     max_count              = number
     min_count              = number
+    max_surge              = string
     node_count             = number
   }))
 
