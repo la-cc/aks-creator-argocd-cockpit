@@ -65,6 +65,7 @@ clusters:
         resource_group: <rg-excelsior-cloud-development>
         tenantID: <6af....>
         subscriptionID: <e184c....>
+        userAssignedIdentityID <941e....> #Client ID from user managed identity e.g. aks-excelsior-development-agentpool
         domain_filters:
           - <cockpit-dev.example.com>
         txtOwnerId: <argocd-cockpit-excelsior-cloud-development>
