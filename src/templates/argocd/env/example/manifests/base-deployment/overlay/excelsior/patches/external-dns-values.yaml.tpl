@@ -9,7 +9,7 @@ valuesInline:
     tenantId: "{{ cluster.argocd.externalDNS.tenantID }}"
     subscriptionId: "{{ cluster.argocd.externalDNS.subscriptionID }}"
     useManagedIdentityExtension: true
-    userAssignedIdentityID: {{ cluster.service_catalog.externalDNS.userAssignedIdentityID }}
+    userAssignedIdentityID: {{ cluster.argocd.externalDNS.userAssignedIdentityID }}
   domainFilters:
   {%- for filter in cluster.argocd.externalDNS.domain_filters %}
     - {{ filter }}
